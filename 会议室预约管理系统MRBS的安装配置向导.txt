@@ -1,0 +1,59 @@
+■前提条件：
+1、PHP 4.3.2+ with MySQL support
+2、MySQL 4.0.14+
+
+■操作步骤：
+1、获取并解压缩mrbs-1.4.11.zip到任意地方（http://sourceforge.net/projects/mrbs/files/）
+2、将解压得到的mrbs-1.4.11/web拷贝到vhost，或者将web改名为mrbs之类的拷贝到htdocs
+3、在MySQL建立给mrbs使用的database和账户，比如database=mrbs；username=mrbs；password=secret
+4、将mrbs-1.4.11/tables.my.sql导入到刚建立的database
+5、打开web/config.inc.php，做以下变更：
+   1）启用并修改 $timezone = "Asia/Shanghai";
+   2）根据3的结果修改mysql配置
+   3）增加设置 $mrbs_admin = "Your Administrator"; //根据实际情况设置，下同
+   4）增加设置 $mrbs_admin_email = "admin_email@your.org";
+   5）增加设置 $mrbs_company = "Your Great Org Name";
+   6）如果希望每周从周一开始算，增加设置 $weekstarts = 1;
+   7）增加设置 $auth["type"] = "db";
+   8）增加设置 $auth["session_cookie"]["secret"] = "Ztbuhsg3FSR3JSfhjR223jhd"; //自行设置
+   9）如果需要发送邮件，请根据实际环境增加如下设置（如果不要发邮件则无视）
+      $smtp_settings['host'] = 'localhost';  // SMTP server
+      $smtp_settings['port'] = 25;           // SMTP port number
+      $smtp_settings['auth'] = FALSE;        // Whether to use SMTP authentication
+      $smtp_settings['username'] = '';       // Username (if using authentication)
+      $smtp_settings['password'] = '';       // Password (if using authentication)
+	  $mail_settings['from'] = 'admin_email@your.org';
+	  $mail_settings['organizer'] = 'mrbs@your.org';
+	  $mail_settings['recipients'] = 'admin_email@your.org';
+   10）其他设置
+      //解决Excel和WPS等不能正常打开导出的CSV报表的问题
+      $csv_charset = 'GBK'; //只针对中文环境
+      $csv_bom = FALSE;
+      //日期时间格式化
+      $strftime_format['datetime24']   = "%y-%m-%d(%a) %H:%M";    // 24 hour clock
+      $strftime_format['datetime12']   = "%y-%m-%d(%a) %I:%M%p";  // 12 hour clock
+      $strftime_format['date']         = "%Y-%m-%d (%A)";  // Used in Day view
+      //增加与会人数字段
+      $vocab_override['en']['entry.number_of_people'] = "Number of People";
+      $vocab_override['zh-cn']['entry.number_of_people'] = "与会人数";
+      $is_mandatory_field['entry.number_of_people'] = true;
+   11）需要修改数据库的部分（注意`mrbs`需要改为实际的数据库名）
+      ALTER TABLE `mrbs`.`mrbs_entry`
+      ADD COLUMN `number_of_people` INT NULL AFTER `ical_recur_id`;
+      ALTER TABLE `mrbs`.`mrbs_repeat`
+      ADD COLUMN `number_of_people` INT NULL ;
+6、打开浏览器访问 http://localhost/mrbs/ （URL根据实际部署），如果页面正常显示，表示部署过程OK
+7、点击页面右上角的【用户清单】（在【登录】下面）以设置管理员账号
+   这是第一个管理员账号，需要他来创建其他账号，请提前准备好以下资料：
+   名称（建议使用中文实名）、Email地址、密码
+8、根据需要新建所需的用户
+9、新建区域和会议室；例如新建一号楼区域，然后新建501、503等会议室
+10、Rejoice~
+
+
+■参考资料
+1、关于用户级别
+   - Level 0 - Unknown user，只能看，不能变更
+   - Level 1 - Authenticated user，可以预定并变更自己产生的预定记录
+   - Level 2 - Administrator，管理员，管理区域、房间等，需要管理员来操作
+2、本文档只是针对一般情况的快速上手向导，本文档不能满足您的需要时，请认真阅读安装包根目录下的INSTALL/README/AUTHENTICATION等文件
